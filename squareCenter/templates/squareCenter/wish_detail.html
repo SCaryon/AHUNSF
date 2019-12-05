@@ -1,0 +1,19 @@
+{% load staticfiles %}   <!-- 虽然extends了 但还是要加上 -->
+
+<div>
+    <h2 align="center">{{wish.name}}</h2>
+          <ul>
+              <li>{{wish.publisher}}</li>
+              <li>
+              <a href={% url 'wishes_list_with_type' wish.type.pk %}>
+                  {{wish.type}}
+              </a></li>
+              <li> {{wish.pubTime | date:"Y-m-d H:i:s"}}</li>
+              <li> {{wish.last_updated_time | date:"Y-m-d H:i:s"}}</li>
+          </ul>
+</div>
+
+<h1>{{ wish.price }}</h1>
+<div>
+{{wish.description |safe}}
+</div>

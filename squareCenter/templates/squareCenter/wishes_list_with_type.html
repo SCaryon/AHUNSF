@@ -1,0 +1,16 @@
+{% extends 'squareCenter/wishes_list.html' %}
+{% load staticfiles %}   
+
+
+{% block title %} 
+    tag: {{object_type.type_name}}
+{% endblock %}
+
+
+{% block object_type_name %}
+    当前分类：{{object_type.type_name}}
+{% endblock  %}
+    
+
+
+

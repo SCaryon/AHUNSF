@@ -1,0 +1,22 @@
+{% load staticfiles %}   <!-- 虽然extends了 但还是要加上 -->
+
+
+<div>
+    <h2 align="center">{{product.name}}</h2>
+          <ul>
+              <li>{{product.publisher}}</li>
+              <li>
+              <a href={% url 'products_list_with_type' product.type.pk %}>
+                  {{product.type}}
+              </a></li>
+              <li> {{product.pubTime | date:"Y-m-d H:i:s"}}</li>
+              <li> {{product.last_updated_time | date:"Y-m-d H:i:s"}}</li>
+          </ul>
+</div>
+
+<h1>{{ product.price }}</h1>
+
+<div>
+{{product.description |safe}}
+</div>
+
