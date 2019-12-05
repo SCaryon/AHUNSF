@@ -3,3 +3,5 @@
 /personalCenter/migrations/*_initial.py
 /personalCenter/migrations/__pycache__/*
 
+
+.idea/
