@@ -1,4 +1,5 @@
 {% load staticfiles %}   <!-- 虽然extends了 但还是要加上 -->
+{% load collects_tags %}  <!-- 获取收藏数 -->
 
 <div>
     <h2 align="center">{{wish.name}}</h2>
@@ -17,3 +18,61 @@
 <div>
 {{wish.description |safe}}
 </div>
+
+
+<span class="collect {{wish | get_collect_status:user}}" onclick="collectChange(this, '{{wish|get_content_type}}', {{wish.pk}})">
+<span class="collected-num">{{wish | get_collect_count }}</span>
+<span>收藏</span>
+</span>
+
+
+<style>
+    span.collect{
+    color: #337ab7;
+    cursor: pointer;
+}
+
+span.collect.active{
+    color:rgb(248, 129, 129);
+}
+</style>
+
+<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
+
+<script type="text/javascript">
+  // 使用ajax动态点赞
+  function collectChange(obj, content_type, object_id){
+    var is_collect = obj.classList.contains('active') == false
+    $.ajax({
+      url: "{% url 'collect_change' %}",
+      type: 'GET',
+      data:{
+        content_type: content_type,
+        object_id: object_id,
+        is_collect: is_collect
+      },
+      cache:false,
+      success: function(data){
+        console.log(data)
+        if(data['status']=='SUCCESS'){
+          //更新点赞状态
+          $(obj).toggleClass("active")  //$()  由dom对象转为jQuery对象
+          //更新点赞数量
+          var collected_num = $(obj.getElementsByClassName('collected-num'));
+          collected_num.text(data['collected_num'])
+        }
+        else{
+          if(data['code']==400){//提醒登录
+            $('#login_modal').modal('show')
+          }
+          else{
+
+          }
+        }
+      },
+      error: function(xhr){
+        console.log(xhr)
+      }
+    });
+  }
+</script>
