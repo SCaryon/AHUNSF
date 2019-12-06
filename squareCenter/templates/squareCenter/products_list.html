@@ -8,9 +8,18 @@
 </head>
 <body>
 
+<div>
+    <form method="get" action="{% url 'products' %}">
+      {% csrf_token %}
+      <input type="search" placeholder="搜索商品" name="keyword" required>
+      <button type="submit">搜索</button>
+    </form>
+</div>
+
+<br>
 
 <div>
-    <b>{% block object_type_name %}全部商品{% endblock %}</b> &nbsp;(当前页{{page_of_objects.object_list.count}}个, 共{{page_of_objects.paginator.count}}个)
+    <b>{% block display_type %}全部商品{% endblock %}</b> &nbsp;(当前页{{page_of_objects.object_list.count}}个, 共{{page_of_objects.paginator.count}}个)
 </div>
 
 <div>
@@ -43,7 +52,7 @@
                 <ul class="pagination">
                     {% if page_of_objects.has_previous %}
                         <li title="上一页">
-                            <a href="?page={{page_of_objects.number | add:-1}}" aria-label="Previous">
+                            <a href="?{% if keyword %}keyword={{keyword}}&{% endif %}page={{page_of_objects.number | add:-1}}" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
@@ -57,7 +66,7 @@
 
 
                     {% if page_range.0 > 2 %}
-                        <li><a href="?page=1">1</a></li>
+                        <li><a href="?{% if keyword %}keyword={{keyword}}&{% endif %}page=1">1</a></li>
                     {% endif %}
                     {% if page_range.0 > 1 %}
                         <li><a>...</a></li>
@@ -66,7 +75,7 @@
 
                     {% for page_id in page_range %}  <!-- page_of_objects.paginator.page_range -->
                         <li {% ifequal page_id page_of_objects.number %} class="active"{% endifequal %}>
-                            <a href="?page={{page_id}}">{{page_id}}</a>
+                            <a href="?{% if keyword %}keyword={{keyword}}&{% endif %}page={{page_id}}">{{page_id}}</a>
                         </li>
                     {% endfor %}
 
@@ -76,14 +85,14 @@
                     {% endif %}
                     {% if page_range|last < page_of_objects.paginator.num_pages|add:-1 %}
                         <li>
-                            <a href="?page={{page_of_objects.paginator.num_pages}}">{{page_of_objects.paginator.num_pages}}</a>
+                            <a href="?{% if keyword %}keyword={{keyword}}&{% endif %}page={{page_of_objects.paginator.num_pages}}">{{page_of_objects.paginator.num_pages}}</a>
                         </li>
                     {% endif %}
 
 
                     {% if page_of_objects.has_next %}
                         <li title="下一页">
-                            <a href="?page={{page_of_objects.number|add:1}}" aria-label="Next">
+                            <a href="?{% if keyword %}keyword={{keyword}}&{% endif %}page={{page_of_objects.number|add:1}}" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
