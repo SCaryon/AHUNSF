@@ -1,5 +1,6 @@
 {% load staticfiles %}   <!-- 虽然extends了 但还是要加上 -->
 {% load collects_tags %}   <!-- 获取收藏数 -->
+{% load comment_tags %}   <!-- 获取评论数 -->
 
 <div>
     <h2 align="center">{{product.name}}</h2>
@@ -11,6 +12,7 @@
               </a></li>
               <li> {{product.pubTime | date:"Y-m-d H:i:s"}}</li>
               <li> {{product.last_updated_time | date:"Y-m-d H:i:s"}}</li>
+              <li>评论数({{product | get_comment_count}})</li>
           </ul>
 </div>
 
@@ -24,6 +26,59 @@
 <span class="collected-num">{{product | get_collect_count }}</span>
 <span>收藏</span>
 </span>
+
+<br>
+<br>
+
+<div class="comment-area">
+  <h3 class="comment-title" id="comment-title">评论</h3>
+      {% if user.is_authenticated %}
+            <form id="comment_form" action="{% url 'update_comment' %}" method="POST" style="overflow:hidden">
+              {% csrf_token %}
+              <div class="form-group">
+                <label>hi! {{user.username}}, 欢迎评论~</label>
+                {% for field in product|get_comment_form %}
+                  {{field}}
+                  <p class="text-danger">{{field.errors.as_text}}</p>
+                {% endfor %}
+              </div>
+              <p id="comment-message" class="text-danger pull-left"></p>
+              <input type="submit" value="提交" class="btn btn-primary pull-right">
+            </form>
+      {% else %}
+            登录之后就可以评论 / 回复啦(#^.^#) &nbsp;&nbsp;
+            <a href=""> <b>点此登录</b> </a>
+            &nbsp;&nbsp;
+            <a href=""> <b>点此注册</b> </a>
+      {% endif %}
+</div>
+
+
+<div class="comment-list">
+      <h3 class="comment-title">评论列表</h3>
+      <div id="comment-list-for-ajax">
+          {% for item in product|get_comment_list %}
+                <div style="margin-bottom:3em;" id="comment_id_{{item.pk}}">
+                  <p>
+                      编号：#{{item.pk}}&nbsp;&nbsp;&nbsp;
+                      用户名：{{item.user.username}}&nbsp;&nbsp;&nbsp;
+                      时间：{{item.comment_time | date:"Y-m-d H:i:s"}}&nbsp;&nbsp;&nbsp;
+                      <span class="collect {{item | get_collect_status:user}}" onclick="collectChange(this, '{{item|get_content_type}}', {{item.pk}})">
+                          <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true">给该条评论点赞</span>
+                          <span class="collected-num">{{item | get_collect_count }}</span>
+                      </span>&nbsp;&nbsp;&nbsp;
+                  </p>
+                  <div class="product-content" style="border:1px dashed;border-color:rgb(108, 94, 238);padding-left: 2em;padding-right: 2em;">
+                      {{item.text |safe}}
+                  </div>
+                </div>
+          {%empty%}
+              <p id="no-comment">暂无评论！快写一条吧(๑′ᴗ‵๑)</p>
+          {% endfor %}
+      </div>
+</div>
+
+
 
 <style>
     span.collect{
@@ -39,6 +94,65 @@ span.collect.active{
 <script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
 
 <script type="text/javascript">
+  // 造一份format轮子 方便插入html代码
+  String.prototype.format = function(){// '{0}+{1}'.format(a,b) = 'a+b'
+    var str = this;
+    for (var i = 0; i < arguments.length; i++) {
+      var str = str.replace(new RegExp('\\{'+i+'\\}', 'g'), arguments[i])
+    };
+    return str;
+  }
+
+  // 使用ajax动态提交评论
+  $("#comment_form").submit(function(){
+      // 清空消息
+      $("#comment-message").html("");
+
+      // 异步提交
+      $.ajax({
+        url: "{% url 'update_comment' %}",
+        type: 'POST',
+        data: $(this).serialize(),
+        cache: false,
+        success: function(data){
+          console.log(data);
+          if(data['status']=="SUCCESS"){
+                // 插入数据
+                var comment_html = ["                <div style=\"margin-bottom:3em;\" id=\"comment_id_{0}\">",
+                                    "                  <p>",
+                                    "                      编号：#{0}&nbsp;&nbsp;&nbsp;",
+                                    "                      用户名：{1}&nbsp;&nbsp;&nbsp;",
+                                    "                      时间：{2}&nbsp;&nbsp;&nbsp;",
+                                    "                      <span class=\"collect\" onclick=\"collectChange(this, \'{4}\', {0})\">",
+                                    "                          <span class=\"glyphicon glyphicon-thumbs-up\" aria-hidden=\"true\">给该条评论点赞</span>",
+                                    "                          <span class=\"collected-num\">0</span>",
+                                    "                      </span>&nbsp;&nbsp;&nbsp;",
+                                    "                  </p>",
+                                    "                  <div class=\"product-content\" style=\"border:1px dashed;border-color:rgb(108, 94, 238);padding-left: 2em;padding-right: 2em;\">",
+                                    "                      {3}",
+                                    "                  </div>",
+                                    "                </div>"].join("");
+                comment_html = comment_html.format(data['pk'], data['username'], data['comment_time'], data['text'], data['content_type']);
+                $("#comment-list-for-ajax").prepend(comment_html);
+                // 清空编辑框的内容
+                $("#forclear").val("");
+                var message = "提交成功！"
+                $("#comment-message").html(message);
+                $('#no-comment').remove();
+          }
+          else{
+                // 显示错误信息
+                $("#comment-message").text(data['message']);
+          }
+        },
+        error: function(xhr){
+          console.log(xhr);
+        }
+      });
+      return false;
+  });
+
+
   // 使用ajax动态点赞
   function collectChange(obj, content_type, object_id){
     var is_collect = obj.classList.contains('active') == false

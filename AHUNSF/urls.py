@@ -22,6 +22,7 @@ urlpatterns = [
     path('user/', include('personalCenter.urls')),
     path('square/', include('squareCenter.urls')),
     path('likes/', include('likes.urls')),
+    path('comment/', include('comment.urls')),
     path('admin/', admin.site.urls),
 ]
 
