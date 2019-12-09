@@ -24,7 +24,8 @@
 <p>-----显示发布的商品----</p>
 {% if product_list.count > 0 %}
     {% for item in product_list %}
-        <span>item.name</span>
+        <img src="{{ item.img1.url }}"/>
+        <span>{{ item.name}}</span>
     {% endfor %}
 {% endif %}
 

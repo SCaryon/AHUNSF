@@ -53,11 +53,12 @@ def center(request, uid):
     if User.objects.filter(pk=uid).exists():
         user = User.objects.filter(pk=uid).first()
         #bug : 判断是否已经登录
-        #isFans = Follow.objects.filter(fans=request.user).filter(idol=user).exists()
+        if request.user.is_authenticated:
+            isFans = Follow.objects.filter(fans=request.user).filter(idol=user).exists()
+            context['isFans'] = isFans
         product_list = Product.objects.filter(publisher=user)
         wish_list = Wish.objects.filter(publisher=user)
         context['other'] = user
-        #context['isFans'] = isFans
         context['product_list'] = product_list
         context['wish_list'] = wish_list
         return render(request, "personalCenter/center.html", context)

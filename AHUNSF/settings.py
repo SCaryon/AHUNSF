@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'squareCenter',
     'likes',
     'comment',
+    'upload',
 ]
 
 MIDDLEWARE = [

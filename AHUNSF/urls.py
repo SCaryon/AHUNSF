@@ -24,6 +24,7 @@ urlpatterns = [
     path('likes/', include('likes.urls')),
     path('comment/', include('comment.urls')),
     path('admin/', admin.site.urls),
+    path('upload/', include('upload.urls')),
 ]
 
 if settings.DEBUG:
