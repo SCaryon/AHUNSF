@@ -19,6 +19,7 @@ def register(request):
             password = reg_form.cleaned_data['password']
             user = User.objects.create_user(username, email, password)
             user.save()
+            Profile(user=user)
             user = auth.authenticate(username=username, password=password)
             auth.login(request, user)
             return redirect(request.GET.get('from', reverse('products')))
@@ -96,21 +97,27 @@ def unfollow(request):
 # 显示关注的人
 def show_idols(request):
     context = {}
-    userid = request.GET.get('userid') #当前个人中心的id
-    meid = request.GET.get('meid') #登录用户的id
+    userid = request.GET.get('userid')  # 当前个人中心的id
+    meid = request.GET.get('meid')  # 登录用户的id
     user = User.objects.filter(pk=userid).first()
-    me = User.objects.filter(pk=meid).first()
     follows = Follow.objects.filter(fans=user)
     idols = []
     for follow in follows:
         item = {}
         item['idol'] = follow.idol.username
         item['idolid'] = follow.idol.pk
-        if Follow.objects.filter(idol=follow.idol).filter(fans=me).exists():
-            item['isFollow'] = 1
-        else:
-            item['isFollow'] = 0
+        if meid != -1:
+            me = User.objects.filter(pk=meid).first()
+            if Follow.objects.filter(idol=follow.idol).filter(fans=me).exists():
+                item['isFollow'] = 1
+            else:
+                item['isFollow'] = 0
         idols.append(item)
     context['idols'] = idols
     context['status'] = 'SUCCESS'
     return JsonResponse(context)
+
+
+# 修改密码
+def changePwd(request):
+    pass

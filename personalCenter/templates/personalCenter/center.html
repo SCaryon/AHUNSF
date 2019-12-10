@@ -47,8 +47,14 @@
 {% endif %}
 
 <p>-----显示关注的人----</p>
-<button onclick="showIdols({{ other.pk }})">关注的人</button>
+{% if user.is_authenticated %}
+    <button onclick="showIdols({{ other.pk }},{{ user.pk }})">关注的人</button>
+{% else %}
+    <button onclick="showIdols({{ other.pk }},-1)">关注的人</button>
+{% endif %}
+<p/>
 <div id="idols">
+
 </div>
 <p>-----显示粉丝-----</p>
 
@@ -67,6 +73,29 @@
                 if (data['status'] = 'SUCCESS') {
                     $('#follow-button').remove()
                     $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>')
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //用于在别人的idol列表中添加关注，为了避免标签复杂化，重写一遍
+    function followidol(userid, otherid, htmlid) {
+        console.log(userid, otherid, htmlid)
+        $.ajax({
+            url: "{% url 'follow' %}",
+            type: 'GET',
+            data: {
+                userid: userid,
+                otherid: otherid
+            },
+            cache: false,
+            success: function (data) {
+                if (data['status'] = 'SUCCESS') {
+                    $('#follow-button' + htmlid).remove()
+                    $('#follow-span' + htmlid).append('<span>已关注</span')
                 }
             },
             error: function (xhr) {
@@ -98,18 +127,35 @@
     }
 
     //userid:当前页面的用户id   meid：登录的用户id
-    function showIdols(userid,meid) {
+    function showIdols(userid, meid) {
         $.ajax({
             url: "{% url 'show_idols' %}",
             type: 'GET',
             data: {
                 userid: userid,
-                meid:meid
+                meid: meid
             },
             cache: false,
             success: function (data) {
                 if (data['status'] = 'SUCCESS') {
                     console.log(data)
+                    for (var i = 0; i < data['idols'].length; i++) {
+                        var fhtml = '';
+                        if (meid != -1 & data['idols'][i]['idolid'] != meid) {
+                            if (data['idols'][i]['isFollow'] != 0) {
+                                fhtml = '<span>已关注</span>'
+                            } else {
+                                fhtml = '<div id="follow-span' + data['idols'][i]['idolid'] +
+                                    '"><button id = "follow-button' + data['idols'][i]['idolid'] +
+                                    '" onclick="followidol(' + meid + ',' + data['idols'][i]['idolid'] +
+                                    ',' + data['idols'][i]['idolid'] + ')">关注</button></div>';
+                            }
+                        }
+                        html = '<a href="/user/' + data['idols'][i]['idolid'] + '">' +
+                            data['idols'][i]['idol'] + '</a> &nbsp;' +
+                            fhtml + '<p/>';
+                        $('#idols').append(html);
+                    }
                 }
             },
             error: function (xhr) {
