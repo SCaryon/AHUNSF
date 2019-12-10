@@ -3,7 +3,7 @@ from django.contrib import auth
 from django.core import serializers
 from django.urls import reverse
 from django.http import JsonResponse
-from .forms import LoginForm, RegForm
+from .forms import LoginForm, RegForm, ChangePwdForm
 from django.contrib.auth.models import User
 from .models import Follow
 from squareCenter.models import Product, Wish
@@ -25,9 +25,9 @@ def register(request):
             return redirect(request.GET.get('from', reverse('products')))
     else:
         reg_form = RegForm()
-        context = {}
-        context['reg_form'] = reg_form
-        return render(request, 'personalCenter/register.html', context)
+    context = {}
+    context['reg_form'] = reg_form
+    return render(request, 'personalCenter/register.html', context)
 
 
 # 用户登录
@@ -119,5 +119,17 @@ def show_idols(request):
 
 
 # 修改密码
-def changePwd(request):
-    pass
+def change_pwd(request):
+    if request.method == "POST":
+        changepwd_form = ChangePwdForm(request.POST)
+        if changepwd_form.is_valid():
+            user = changepwd_form.cleaned_data['user']
+            user.set_password(changepwd_form.cleaned_data['newpassword'])
+            user.save()
+            auth.login(request, user)
+            return redirect(request.GET.get('from', reverse('products')))
+    else:
+        changepwd_form = ChangePwdForm()
+    context = {}
+    context['changepwd_form'] = changepwd_form
+    return render(request, 'personalCenter/changepwd.html', context)
