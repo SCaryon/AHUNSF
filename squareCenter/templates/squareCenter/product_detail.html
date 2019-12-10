@@ -27,6 +27,16 @@
 <span>收藏</span>
 </span>
 
+
+
+{% ifequal product.publisher.pk user.pk %}
+    <br>
+    <span>
+        <a href="{% url 'delete_product' product.id %}">删除</a>
+    </span>
+{% endifequal %}
+
+
 <br>
 <br>
 

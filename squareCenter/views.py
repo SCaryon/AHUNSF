@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 # from django.http import HttpResponse, Http404
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.http import JsonResponse
 
 from .models import Product, ProductType, Wish, WishType
 
@@ -77,7 +78,7 @@ def wishes_list_with_type(request, type_id):
 
 
 def product_detail(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
+    product = get_object_or_404(Product, pk=product_id, is_deleted=False)
 
     Dict = {}
     Dict['product'] = product
@@ -86,7 +87,7 @@ def product_detail(request, product_id):
 
 
 def wish_detail(request, wish_id):
-    wish = get_object_or_404(Wish, pk=wish_id)
+    wish = get_object_or_404(Wish, pk=wish_id, is_deleted=False)
 
     Dict = {}
     Dict['wish'] = wish
@@ -94,3 +95,40 @@ def wish_detail(request, wish_id):
     return response
 
 
+def ErrorResponse(code, message):
+    data = {}
+    data['status'] = 'ERROR'
+    data['code'] = code
+    data['message'] = message
+    return JsonResponse(data)
+
+
+def delete_product(request, product_id):
+    # 检查是否登录 以及产品的发布人是否是当前的登录人
+    user = request.user
+    if not user.is_authenticated:
+        return ErrorResponse(400, 'You have not logged in yet!')
+    # 取出obj
+    if not Product.objects.filter(publisher=user, pk=product_id).exists():  # 不正常情况
+        return ErrorResponse(401, 'You have not published this product! Can\'t delete')
+    else:
+        product_obj = Product.objects.get(publisher=user, pk=product_id)
+        product_obj.is_deleted = True
+        product_obj.save()
+        redirect_url = reverse('center', kwargs={'uid': user.id})  # 返回个人中心
+        return redirect(redirect_url)
+
+
+def delete_wish(request, wish_id):
+    user = request.user
+    if not user.is_authenticated:
+        return ErrorResponse(400, 'You have not logged in yet!')
+    # 取出obj
+    if not Wish.objects.filter(publisher=user, pk=wish_id).exists():  # 不正常情况
+        return ErrorResponse(401, 'You have not published this wish! Can\'t delete')
+    else:
+        wish_obj = Wish.objects.get(publisher=user, pk=wish_id)
+        wish_obj.is_deleted = True
+        wish_obj.save()
+        redirect_url = reverse('center', kwargs={'uid': user.id})  # 返回个人中心
+        return redirect(redirect_url)

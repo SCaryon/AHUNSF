@@ -27,6 +27,12 @@
 <span>收藏</span>
 </span>
 
+{% ifequal wish.publisher.pk user.pk %}
+    <br>
+    <span>
+        <a href="{% url 'delete_wish' wish.id %}">删除</a>
+    </span>
+{% endifequal %}
 
 <br>
 <br>
