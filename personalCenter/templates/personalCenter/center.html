@@ -1,0 +1,131 @@
+{#个人中心#}
+{% load staticfiles %}
+<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
+
+<label>{{ other.username }} {{ other.pk }}</label>
+{% if user.is_authenticated %}
+    {% if other.pk != user.pk %}
+        <span id="follow-span">
+        {% if isFans == False %}
+            <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})">关注</button>
+        {% else %}
+            <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>
+        {% endif %}
+        </span>
+    {% else %}
+        <a href="{% url 'add_product' %}">发布商品</a>
+        <a href="{% url 'add_wish' %}">发布心愿</a>
+        <a href="{% url 'logout' %}"> 退出登录</a>
+    {% endif %}
+{% else %}
+    <a href="{% url 'login' %}">登录后才可关注</a>
+{% endif %}
+
+<p>-----显示发布的商品----</p>
+{% if product_list.count > 0 %}
+    {% for item in product_list %}
+        <div id="product-{{ item.pk }}">
+            <img src="{{ item.img1.url }}"/>
+            <span>{{ item.name }}</span>
+            {% if other.pk == user.pk %}
+                <button onclick="deleteProduct({{ item.pk }})">删除商品</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<p>-----显示发布的心愿-----</p>
+{% if wish_list.count > 0 %}
+    {% for item in wish_list %}
+        <div id="wish-{{ item.pk }}">
+            <span>{{ item.name }}</span>
+            {% if other.pk == user.pk %}
+                <button onclick="deleteWish({{ item.pk }})">删除心愿</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<p>-----显示关注的人----</p>
+<button onclick="showIdols({{ other.pk }})">关注的人</button>
+<div id="idols">
+</div>
+<p>-----显示粉丝-----</p>
+
+<script>
+    // 使用ajax添加关注
+    function follow(userid, otherid) {
+        $.ajax({
+            url: "{% url 'follow' %}",
+            type: 'GET',
+            data: {
+                userid: userid,
+                otherid: otherid
+            },
+            cache: false,
+            success: function (data) {
+                if (data['status'] = 'SUCCESS') {
+                    $('#follow-button').remove()
+                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>')
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //使用ajax取消关注
+    function unfollow(userid, otherid) {
+        $.ajax({
+            url: "{% url 'unfollow' %}",
+            type: 'GET',
+            data: {
+                userid: userid,
+                otherid: otherid
+            },
+            cache: false,
+            success: function (data) {
+                if (data[status] = 'SUCCESS') {
+                    $('#unfollow-button').remove()
+                    $('#follow-span').append(' <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})">关注</button>')
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //userid:当前页面的用户id   meid：登录的用户id
+    function showIdols(userid,meid) {
+        $.ajax({
+            url: "{% url 'show_idols' %}",
+            type: 'GET',
+            data: {
+                userid: userid,
+                meid:meid
+            },
+            cache: false,
+            success: function (data) {
+                if (data['status'] = 'SUCCESS') {
+                    console.log(data)
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //删除发布的商品
+    function deleteProduct(productid) {
+        console.log(productid)
+        $('#product-' + productid).remove()
+    }
+
+    //删除发布的心愿
+    function deleteWish(wishid) {
+        $('#wish-' + wishid).remove()
+    }
+</script>
