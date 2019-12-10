@@ -27,6 +27,16 @@
 <span>收藏</span>
 </span>
 
+
+
+{% ifequal product.publisher.pk user.pk %}
+    <br>
+    <span>
+        <a href="{% url 'delete_product' product.id %}">删除</a>
+    </span>
+{% endifequal %}
+
+
 <br>
 <br>
 
@@ -66,7 +76,12 @@
                       <span class="collect {{item | get_collect_status:user}}" onclick="collectChange(this, '{{item|get_content_type}}', {{item.pk}})">
                           <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true">给该条评论点赞</span>
                           <span class="collected-num">{{item | get_collect_count }}</span>
-                      </span>&nbsp;&nbsp;&nbsp;
+                      </span>&nbsp;
+                      {% ifequal item.user.pk user.pk%}
+                          <span class="delete_comment" onclick="deleteComment(this, '{{product|get_content_type}}', {{product.pk}}, {{item.pk}})">
+                              删除
+                          </span>
+                      {%  endifequal %}
                   </p>
                   <div class="product-content" style="border:1px dashed;border-color:rgb(108, 94, 238);padding-left: 2em;padding-right: 2em;">
                       {{item.text |safe}}
@@ -81,7 +96,7 @@
 
 
 <style>
-    span.collect{
+    span.collect, span.delete_comment{
     color: #337ab7;
     cursor: pointer;
 }
@@ -188,5 +203,37 @@ span.collect.active{
       }
     });
   }
+
+  // 使用ajax删除评论
+    function deleteComment(obj, content_type, object_id1, object_id2){
+        $.ajax({
+          url: "{% url 'delete_comment' %}",
+          type: 'GET',
+          data:{
+            content_type: content_type,
+            object_id1: object_id1,
+            object_id2: object_id2,
+          },
+          cache:false,
+          success: function(data){
+            console.log(data)
+            if(data['status']=='SUCCESS'){
+                //删除评论
+                $("#comment_id_" + object_id2.toString()).remove();
+            }
+            else{
+              if(data['code']==400){//提醒登录
+                $('#login_modal').modal('show')
+              }
+              else{
+
+              }
+            }
+          },
+          error: function(xhr){
+            console.log(xhr)
+          }
+        });
+    }
 </script>
 
