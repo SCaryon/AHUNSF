@@ -1,0 +1,65 @@
+{% load staticfiles %}
+<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
+<textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+<input id="chat-message-input" type="text" size="100"/><br/>
+<input id="chat-message-submit" type="button" onclick="send({{ user.pk }},{{ other.pk }})" value="Send"/>
+<button onclick="showhistory({{ user.pk }},{{ other.pk }})">历史消息</button>
+<script>
+    var roomName = {{ room_name }};
+    {% for msg in unread_msg %}
+        var m = '{{  msg.sender.username }}' + ":" + '{{ msg.text }}';
+        document.querySelector('#chat-log').value += (m + '\n');
+    {% endfor %}
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + roomName + '/');
+
+    chatSocket.onmessage = function (e) {
+        var data = JSON.parse(e.data);
+        console.log(data)
+        var message = data['message'];
+        var sender = data['sender']
+        document.querySelector('#chat-log').value += (sender + ": " + message + '\n');
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    function send(sender, receiver) {
+        var messageInputDom = document.querySelector('#chat-message-input');
+        var message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'senderpk': sender,
+            'receiverpk': receiver
+        }));
+
+        messageInputDom.value = '';
+    };
+    function showhistory(sender, receiver) {
+        $.ajax({
+            url: "{% url 'show_history' %}",
+            type: 'GET',
+            data: {
+                senderpk: sender,
+                receiverpk: receiver
+            },
+            cache: false,
+            success: function (data) {
+                console.log(data)
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+</script>
