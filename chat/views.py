@@ -3,9 +3,8 @@ from django.urls import reverse
 from .models import Message
 from django.contrib.auth.models import User
 from django.db.models import Q
-import json
 from django.http import JsonResponse
-
+from django.utils.timezone import localtime
 
 # Create your views here.
 
@@ -70,7 +69,7 @@ def show_history(request):
         h = {}
         h['sender'] = msg.sender.username
         h['text'] = msg.text
-        h['time'] = msg.send_time.ctime()
+        h['time'] = localtime(msg.send_time).strftime('%Y-%m-%d %H:%M:%S')
         history.append(h)
     context = {}
     context['history'] = history

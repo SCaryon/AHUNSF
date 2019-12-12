@@ -29,7 +29,7 @@
         {% if item.is_deleted == False %}
             <div id="product-{{ item.pk }}">
                 <img src="{{ item.img1.url }}"/>
-                <span>{{ item.name }}</span>
+                <a href="{% url 'product_detail' item.pk %}">{{ item.name }}</a>
                 {% if other.pk == user.pk %}
                     <button onclick="deleteProduct({{ item.pk }})">删除商品</button>
                 {% endif %}
@@ -43,7 +43,7 @@
     {% for item in wish_list %}
         {% if item.is_deleted == False %}
             <div id="wish-{{ item.pk }}">
-                <span>{{ item.name }}</span>
+                <a href="{% url 'wish_detail' item.pk %}">{{ item.name }}</a>
                 {% if other.pk == user.pk %}
                     <button onclick="deleteWish({{ item.pk }})">删除心愿</button>
                 {% endif %}
@@ -51,6 +51,33 @@
         {% endif %}
     {% endfor %}
 {% endif %}
+
+<p>-----显示收藏的商品-----</p>
+
+{% for item in collect_product_list %}
+    {% if item.is_deleted == False %}
+        <div id="collect-product-{{ item.pk }}">
+            <img src="{{ item.img1.url }}"/>
+            <a href="{% url 'product_detail' item.pk %}">{{ item.name }}</a>
+            {% if other.pk == user.pk %}
+                <button onclick="collectChange('product', {{ item.pk }})">取消收藏</button>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}
+<p>-----显示收藏的心愿-----</p>
+
+{% for item in collect_wish_list %}
+    {% if item.is_deleted == False %}
+        <div id="collect-wish-{{ item.pk }}">
+            <a href="{% url 'wish_detail' item.pk %}">{{ item.name }}</a>
+            {% if other.pk == user.pk %}
+                <button onclick="collectChange('wish', {{ item.pk }})">取消收藏</button>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}
+
 
 <p>-----显示关注的人----</p>
 {% if user.is_authenticated %}
@@ -257,6 +284,29 @@
             cache: false,
             success: function (data) {
                 $('#wish-' + wishid).remove()
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //取消收藏
+    function collectChange(content_type, object_id) {
+        $.ajax({
+            url: "{% url 'collect_change' %}",
+            type: 'GET',
+            data: {
+                content_type: content_type,
+                object_id: object_id,
+                is_collect: 'false'
+            },
+            cache: false,
+            success: function (data) {
+                console.log(data)
+                if (data['status'] == 'SUCCESS') {
+                    $('#collect-' + content_type + '-' + object_id).remove()
+                }
             },
             error: function (xhr) {
                 console.log(xhr)

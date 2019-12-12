@@ -7,6 +7,7 @@ from .forms import LoginForm, RegForm, ChangePwdForm
 from django.contrib.auth.models import User
 from .models import Follow
 from squareCenter.models import Product, Wish
+from likes.models import CollectRecord
 
 
 # 注册用户
@@ -62,9 +63,19 @@ def center(request, uid):
             context['isFans'] = isFans
         product_list = Product.objects.filter(publisher=user)
         wish_list = Wish.objects.filter(publisher=user)
+        collect_record = CollectRecord.objects.filter(user=user)
+        collect_product_list = set()
+        collect_wish_list = set()
+        for collect in collect_record:
+            if collect.content_type.model == 'product':
+                collect_product_list.add(collect.content_object)
+            if collect.content_type.model == 'wish':
+                collect_wish_list.add(collect.content_object)
         context['other'] = user
         context['product_list'] = product_list
         context['wish_list'] = wish_list
+        context['collect_product_list'] = collect_product_list
+        context['collect_wish_list'] = collect_wish_list
         return render(request, "personalCenter/center.html", context)
     else:
         raise RuntimeError('用户不存在')
