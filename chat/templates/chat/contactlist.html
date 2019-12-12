@@ -5,7 +5,6 @@
     {% for item in linkman_list %}
         <div>
             <a href="{% url 'room' item.pk %}">{{ item.username }}</a>
-            &emsp;&emsp;
             {% for key,val in unread.items %}
                 {% if key == item.pk %}
                     <span>有{{ val }}条信息未读</span>

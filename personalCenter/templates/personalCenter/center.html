@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
 
-<label>{{ other.username }} {{ other.pk }}</label>
+<label>{{ other.username }} </label>
 {% if user.is_authenticated %}
     {% if other.pk != user.pk %}
         <span id="follow-span">
@@ -11,6 +11,7 @@
         {% else %}
             <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>
         {% endif %}
+            <a href="{% url 'room' other.pk %}">私信</a>
         </span>
     {% else %}
         <a href="{% url 'add_product' %}">发布商品</a>
@@ -19,7 +20,7 @@
         <a href="{% url 'change_pwd' %}">修改密码</a>
     {% endif %}
 {% else %}
-    <a href="{% url 'login' %}">登录后才可关注</a>
+    <a href="{% url 'login' %}?from=/user/{{ other.pk }}">登录后才可关注</a>
 {% endif %}
 
 <p>-----显示发布的商品----</p>

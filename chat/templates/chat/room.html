@@ -1,9 +1,12 @@
 {% load staticfiles %}
 <script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
+
 <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
 <input id="chat-message-input" type="text" size="100"/><br/>
 <input id="chat-message-submit" type="button" onclick="send({{ user.pk }},{{ other.pk }})" value="Send"/>
-<button onclick="showhistory({{ user.pk }},{{ other.pk }})">历史消息</button>
+<button onclick="showhistory({{ user.pk }},{{ other.pk }})">历史消息</button><p/>
+<div id="history-msg"></div>
+
 <script>
     var roomName = {{ room_name }};
     {% for msg in unread_msg %}
@@ -17,7 +20,6 @@
 
     chatSocket.onmessage = function (e) {
         var data = JSON.parse(e.data);
-        console.log(data)
         var message = data['message'];
         var sender = data['sender']
         document.querySelector('#chat-log').value += (sender + ": " + message + '\n');
@@ -42,9 +44,9 @@
             'senderpk': sender,
             'receiverpk': receiver
         }));
-
         messageInputDom.value = '';
     };
+
     function showhistory(sender, receiver) {
         $.ajax({
             url: "{% url 'show_history' %}",
@@ -55,7 +57,12 @@
             },
             cache: false,
             success: function (data) {
-                console.log(data)
+                for (var i = 0; i < data['history'].length; i++) {
+                    html = '<span>sender:' + data['history'][i]['sender'] + '&emsp;text:' +
+                        data['history'][i]['text'] + '&emsp;time:' + data['history'][i]['time'] +
+                        '</span><p/>'
+                    $('#history-msg').append(html)
+                }
             },
             error: function (xhr) {
                 console.log(xhr)
