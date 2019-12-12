@@ -11,8 +11,8 @@
         {% else %}
             <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>
         {% endif %}
-            <a href="{% url 'room' other.pk %}">私信</a>
         </span>
+        <a href="{% url 'room' other.pk %}">私信</a>
     {% else %}
         <a href="{% url 'add_product' %}">发布商品</a>
         <a href="{% url 'add_wish' %}">发布心愿</a>
@@ -26,25 +26,29 @@
 <p>-----显示发布的商品----</p>
 {% if product_list.count > 0 %}
     {% for item in product_list %}
-        <div id="product-{{ item.pk }}">
-            <img src="{{ item.img1.url }}"/>
-            <span>{{ item.name }}</span>
-            {% if other.pk == user.pk %}
-                <button onclick="deleteProduct({{ item.pk }})">删除商品</button>
-            {% endif %}
-        </div>
+        {% if item.is_deleted == False %}
+            <div id="product-{{ item.pk }}">
+                <img src="{{ item.img1.url }}"/>
+                <span>{{ item.name }}</span>
+                {% if other.pk == user.pk %}
+                    <button onclick="deleteProduct({{ item.pk }})">删除商品</button>
+                {% endif %}
+            </div>
+        {% endif %}
     {% endfor %}
 {% endif %}
 
 <p>-----显示发布的心愿-----</p>
 {% if wish_list.count > 0 %}
     {% for item in wish_list %}
-        <div id="wish-{{ item.pk }}">
-            <span>{{ item.name }}</span>
-            {% if other.pk == user.pk %}
-                <button onclick="deleteWish({{ item.pk }})">删除心愿</button>
-            {% endif %}
-        </div>
+        {% if item.is_deleted == False %}
+            <div id="wish-{{ item.pk }}">
+                <span>{{ item.name }}</span>
+                {% if other.pk == user.pk %}
+                    <button onclick="deleteWish({{ item.pk }})">删除心愿</button>
+                {% endif %}
+            </div>
+        {% endif %}
     {% endfor %}
 {% endif %}
 
@@ -59,10 +63,19 @@
 
 </div>
 <p>-----显示粉丝-----</p>
+{% if user.is_authenticated %}
+    <button onclick="showFans({{ other.pk }},{{ user.pk }})">粉丝</button>
+{% else %}
+    <button onclick="showFans({{ other.pk }},-1)">粉丝</button>
+{% endif %}
+<p/>
+<div id="fans"></div>
 
 <script>
     // 使用ajax添加关注
     function follow(userid, otherid) {
+        $('#fans').html('')
+        $('#idols').html('')
         $.ajax({
             url: "{% url 'follow' %}",
             type: 'GET',
@@ -85,7 +98,7 @@
 
     //用于在别人的idol列表中添加关注，为了避免标签复杂化，重写一遍
     function followidol(userid, otherid, htmlid) {
-        console.log(userid, otherid, htmlid)
+
         $.ajax({
             url: "{% url 'follow' %}",
             type: 'GET',
@@ -96,8 +109,12 @@
             cache: false,
             success: function (data) {
                 if (data['status'] = 'SUCCESS') {
-                    $('#follow-button' + htmlid).remove()
-                    $('#follow-span' + htmlid).append('<span>已关注</span')
+                    //改变页面头部的关注
+                    $('#follow-button').remove()
+                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>')
+
+                    $('#follow-button-' + htmlid).remove()
+                    $('#follow-span-' + htmlid).append('<span>已关注</span>')
                 }
             },
             error: function (xhr) {
@@ -108,6 +125,8 @@
 
     //使用ajax取消关注
     function unfollow(userid, otherid) {
+        $('#fans').html('')
+        $('#idols').html('')
         $.ajax({
             url: "{% url 'unfollow' %}",
             type: 'GET',
@@ -130,6 +149,8 @@
 
     //userid:当前页面的用户id   meid：登录的用户id
     function showIdols(userid, meid) {
+        $('#fans').html('')
+        $('#idols').html('')
         $.ajax({
             url: "{% url 'show_idols' %}",
             type: 'GET',
@@ -147,16 +168,56 @@
                             if (data['idols'][i]['isFollow'] != 0) {
                                 fhtml = '<span>已关注</span>'
                             } else {
-                                fhtml = '<div id="follow-span' + data['idols'][i]['idolid'] +
-                                    '"><button id = "follow-button' + data['idols'][i]['idolid'] +
+                                fhtml = '<span id="follow-span' + data['idols'][i]['idolid'] +
+                                    '"><button id = "follow-button-idols' + data['idols'][i]['idolid'] +
                                     '" onclick="followidol(' + meid + ',' + data['idols'][i]['idolid'] +
-                                    ',' + data['idols'][i]['idolid'] + ')">关注</button></div>';
+                                    ',' + '\'idols' + data['idols'][i]['idolid'] + '\')">关注</button></span>';
                             }
                         }
                         html = '<a href="/user/' + data['idols'][i]['idolid'] + '">' +
                             data['idols'][i]['idol'] + '</a> &nbsp;' +
-                            fhtml + '<p/>';
+                            fhtml + '<span id="follow-span-idols' + data['idols'][i]['idolid'] + '"></span><p/>';
                         $('#idols').append(html);
+                    }
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+    }
+
+    //userid:当前页面的用户id   meid：登录的用户id
+    function showFans(userid, meid) {
+        $('#fans').html('')
+        $('#idols').html('')
+        $.ajax({
+            url: "{% url 'show_fans' %}",
+            type: 'GET',
+            data: {
+                userid: userid,
+                meid: meid
+            },
+            cache: false,
+            success: function (data) {
+                if (data['status'] = 'SUCCESS') {
+                    console.log(data)
+                    for (var i = 0; i < data['fans'].length; i++) {
+                        var fhtml = '';
+                        if (meid != -1 & data['fans'][i]['fansid'] != meid) {
+                            if (data['fans'][i]['isFollow'] != 0) {
+                                fhtml = '<span>已关注</span>'
+                            } else {
+                                fhtml = '<span id="follow-span' + data['fans'][i]['fansid'] +
+                                    '"><button id = "follow-button-fans' + data['fans'][i]['fansid'] +
+                                    '" onclick="followidol(' + meid + ',' + data['fans'][i]['fansid'] +
+                                    ',' + '\'fans' + data['fans'][i]['fansid'] + '\')">关注</button></span>';
+                            }
+                        }
+                        html = '<a href="/user/' + data['fans'][i]['fansid'] + '">' +
+                            data['fans'][i]['fans'] + '</a> &nbsp;' +
+                            fhtml + '<span id="follow-span-fans' + data['fans'][i]['fansid'] + '"></span><p/>';
+                        $('#fans').append(html);
                     }
                 }
             },
@@ -168,12 +229,38 @@
 
     //删除发布的商品
     function deleteProduct(productid) {
-        console.log(productid)
-        $('#product-' + productid).remove()
+        url = "{% url 'delete_product' product_id='000' %}"
+        url = url.replace('000', productid)
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: {},
+            cache: false,
+            success: function (data) {
+                $('#product-' + productid).remove()
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
+
     }
 
     //删除发布的心愿
     function deleteWish(wishid) {
-        $('#wish-' + wishid).remove()
+        url = "{% url 'delete_wish' wish_id='000' %}"
+        url = url.replace('000', wishid)
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: {},
+            cache: false,
+            success: function (data) {
+                $('#wish-' + wishid).remove()
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            }
+        });
     }
 </script>

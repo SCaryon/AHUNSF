@@ -118,6 +118,30 @@ def show_idols(request):
     return JsonResponse(context)
 
 
+# 显示粉丝
+def show_fans(request):
+    context = {}
+    userid = request.GET.get('userid')  # 当前个人中心的id
+    meid = request.GET.get('meid')  # 登录用户的id
+    user = User.objects.filter(pk=userid).first()
+    follows = Follow.objects.filter(idol=user)
+    fans = []
+    for follow in follows:
+        item = {}
+        item['fans'] = follow.fans.username
+        item['fansid'] = follow.fans.pk
+        if meid != -1:
+            me = User.objects.filter(pk=meid).first()
+            if Follow.objects.filter(idol=follow.fans).filter(fans=me).exists():
+                item['isFollow'] = 1
+            else:
+                item['isFollow'] = 0
+        fans.append(item)
+    context['fans'] = fans
+    context['status'] = 'SUCCESS'
+    return JsonResponse(context)
+
+
 # 修改密码
 def change_pwd(request):
     if request.method == "POST":

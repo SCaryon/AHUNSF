@@ -10,5 +10,6 @@ urlpatterns = [
     path('follow/', views.follow, name='follow'),
     path('unfollow/', views.unfollow, name='unfollow'),
     path('idols/', views.show_idols, name='show_idols'),
+    path('fans/', views.show_fans, name='show_fans'),
     path('changepwd/', views.change_pwd, name='change_pwd')
 ]
