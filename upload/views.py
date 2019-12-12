@@ -39,7 +39,7 @@ def add_wish(request):
         wish = Wish(name=name, description=description, type=type, publisher=publisher, price=price)
         wish.save()
         context['status'] = 'SUCCESS'
-        return redirect(request.GET.get('from', reverse('products')))
+        return redirect(request.GET.get('from', reverse('wishes')))
     else:
         context['wishtype_list'] = WishType.objects.all()
         return render(request, 'upload/addwish.html', context)
