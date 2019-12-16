@@ -15,8 +15,7 @@ class LoginForm(forms.Form):
         user = auth.authenticate(username=username, password=password)
         if user is None:
             raise forms.ValidationError('用户名或密码不正确')
-        else:
-            self.cleaned_data['user'] = user
+        self.cleaned_data['user'] = user
         return self.cleaned_data
 
 
@@ -29,11 +28,11 @@ class RegForm(forms.Form):
                              widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入邮箱'}))
     password = forms.CharField(label='密码',
                                min_length=6,
-                               widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '输入一次密码'}))
+                               widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '请输入至少6位密码'}))
     password_again = forms.CharField(label='再输入一次密码',
                                      min_length=6,
                                      widget=forms.PasswordInput(
-                                         attrs={'class': 'form-control', 'placeholder': '再输入一次密码'}))
+                                         attrs={'class': 'form-control', 'placeholder': '请再输入一次密码'}))
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -53,7 +52,6 @@ class RegForm(forms.Form):
         if password != password_again:
             raise forms.ValidationError('两次输入密码不一致')
         return password_again
-
 
 class ChangePwdForm(forms.Form):
     username = forms.CharField(label='用户名',

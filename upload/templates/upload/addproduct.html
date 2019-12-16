@@ -1,42 +1,75 @@
+{% extends 'base.html' %}
 {% load staticfiles %}
-<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
-{% if user.is_authenticated %}
-    <form action="" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <span>name</span>
-        <input type="text" name="name">
-        <span>description</span>
-        <input type="text" name="description">
-        <p/>
-        <span>type</span>
-        <select name="typeid">
-            {% for type in producttype_list %}
-                <option value="{{ type.pk }}">{{ type.type_name }}</option>
-            {% endfor %}
-        </select>
-        <p/>
-        <span>price</span>
-        <input type="text" name="price">
-        <p/>
-        <span>图片</span>
-        <span id="imgs">
-    <input type="file" name="img1">
-    </span>
-        <span id="'img-button">
-        <button type="button" onclick="addImg()">继续图片上传</button>
-    </span>
-        <p/>
-        <input type="submit" name="提交">
-    </form>
-{% else %}
-    <a href="{% url 'login' %}">请先登录</a>
-{% endif %}
 
+{% block title %}
+    安大不闲鱼|个人中心
+{% endblock %}
 
+{% block home-extends %}
+    <link rel="stylesheet" href="{% static 'product.css' %}">
+{% endblock %}
 
-<script>
-    function addImg() {
-        num = $('#imgs').children().length + 1
-        $('#imgs').append('<input type="file" name="img' + num + '">')
-    }
-</script>
+{% block center_active_class %}active{% endblock %}
+
+{% block content%}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-12">
+                <div class="thumbnail">
+                    <img src="/static/user_background.jpg" alt="个人中心">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 col-xs-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center"><strong>商品上传</strong></div>
+                    <div class="panel-body">
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label>商品名称</label>
+                                <input type="text" class="form-control" name='name' placeholder="请输入商品名称">
+                            </div>
+                            <div class="form-group">
+                                <label>商品描述</label>
+                                <textarea name='description' style="max-width: 100%;min-width: 100%;" class="form-control" rows="3" placeholder="请输入商品描述"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>商品分类</label><br>
+                                <select name="typeid" class="form-control">
+                                    {% for type in producttype_list %}
+                                        <option value="{{ type.pk }}">{{ type.type_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>商品价格</label>
+                                <input type="text" name="price" class="form-control" placeholder="请输入商品价格">
+                            </div>
+                            <div class="form-group">
+                                <label>商品相关图片</label>
+                                <span id="imgs">
+                                    <input type="file" name="img1">
+                                    <br>
+                                </span>
+                                <span id="img-button">
+                                    <button type="button" onclick="addImg()" class="btn btn-default">继续图片上传</button>
+                                </span>
+                            </div>
+                            <input type="submit" name="提交" class="btn btn-primary btn-block">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            function addImg() {
+                num = $('#imgs').children().length + 1
+                if (num <= 6) {
+                    $('#imgs').append('<input type="file" name="img' + num + '"><br>') 
+                }
+            }
+        </script>
+    </div>
+{% endblock %}

@@ -1,103 +1,145 @@
-{#个人中心#}
+{% extends 'base.html' %}
 {% load staticfiles %}
-<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
 
-<label>{{ other.username }} </label>
-{% if user.is_authenticated %}
-    {% if other.pk != user.pk %}
-        <span id="follow-span">
-        {% if isFans == False %}
-            <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})">关注</button>
+{% block title %}
+    安大不闲鱼|个人中心
+{% endblock %}
+
+{% block home-extends %}<link rel="stylesheet" href="{% static 'product.css' %}">{% endblock %}
+
+{% block center_active_class %}active{% endblock %}
+
+{% block content%}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-12">
+                <div class="thumbnail">
+                    <img src="/static/user_background.jpg" alt="个人中心">
+                </div>
+            </div>
+        </div>
+        <h4><strong>{{ other.username }}</strong> 的个人中心</h4>
+        {% if user.is_authenticated %}
+            {% if other.pk != user.pk %}
+                <span id="follow-span">
+                    {% if isFans == False %}
+                        <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})" class="btn btn-primary btn-sm">关注</button>
+                    {% else %}
+                        <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})" class="btn btn-danger btn-sm">取消关注</button>
+                    {% endif %}
+                </span>
+                <a href="{% url 'room' other.pk %}" class="btn btn-primary btn-sm">私信</a>
+            {% else %}
+                <div class="btn-group btn-group-justified" role="group">
+                    <a href="{% url 'add_product' %}" class="btn btn-primary">发布商品</a>
+                    <a href="{% url 'add_wish' %}" class="btn btn-primary">发布心愿</a>
+                    <a href="{% url 'change_pwd' %}" class="btn btn-danger">修改密码</a>
+                    <a href="{% url 'logout' %}" class="btn btn-danger"> 退出登录</a>
+                </div>
+            {% endif %}
         {% else %}
-            <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>
+            <a href="{% url 'login' %}?from=/user/{{ other.pk }}">登录后才可关注</a>
         {% endif %}
-        </span>
-        <a href="{% url 'room' other.pk %}">私信</a>
-    {% else %}
-        <a href="{% url 'add_product' %}">发布商品</a>
-        <a href="{% url 'add_wish' %}">发布心愿</a>
-        <a href="{% url 'logout' %}"> 退出登录</a>
-        <a href="{% url 'change_pwd' %}">修改密码</a>
-    {% endif %}
-{% else %}
-    <a href="{% url 'login' %}?from=/user/{{ other.pk }}">登录后才可关注</a>
-{% endif %}
-
-<p>-----显示发布的商品----</p>
-{% if product_list.count > 0 %}
-    {% for item in product_list %}
-        {% if item.is_deleted == False %}
-            <div id="product-{{ item.pk }}">
-                <img src="{{ item.img1.url }}"/>
-                <a href="{% url 'product_detail' item.pk %}">{{ item.name }}</a>
-                {% if other.pk == user.pk %}
-                    <button onclick="deleteProduct({{ item.pk }})">删除商品</button>
-                {% endif %}
+        <hr>
+        <div class="row">
+            <div class="col-md-10 col-sm-10 col-xs-10">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#upload-product" aria-controls="upload-product" role="tab" data-toggle="tab">发布商品</a></li>
+                    <li role="presentation"><a href="#upload-wish" aria-controls="upload-wish" role="tab" data-toggle="tab">发布心愿</a></li>
+                    <li role="presentation"><a href="#collect-product" aria-controls="collect-product" role="tab" data-toggle="tab">收藏商品</a></li>
+                    <li role="presentation"><a href="#collect-wish" aria-controls="collect-wish" role="tab" data-toggle="tab">收藏心愿</a></li>
+                </ul>
+                <br>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="upload-product">
+                        {% if product_list.count > 0 %}
+                            {% for item in product_list %}
+                                {% if item.is_deleted == False %}
+                                    <div class="col-md-4 col-sm-4 col-xs-6" id="product-{{ item.pk }}">
+                                        <div class="thumbnail">
+                                            <img src="{{ item.img1.url }}" width="320px">
+                                            <div class="caption">
+                                                <h4><a href='{% url 'product_detail' item.pk %}'> {{item.name}} </a></h4>
+                                                <p><strong>简介:</strong>  {{item.description | striptags | truncatechars:50}} </p>  <!-- striptags可以过滤html标签 -->
+                                                {% if other.pk == user.pk %}
+                                                    <button onclick="deleteProduct({{ item.pk }})" class="btn btn-danger btn-sm">删除商品</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="upload-wish">
+                        {% if wish_list.count > 0 %}
+                            {% for item in wish_list %}
+                                {% if item.is_deleted == False %}
+                                    <div class="col-md-4 col-sm-4 col-xs-6" id="wish-{{ item.pk }}">
+                                        <div class="thumbnail">
+                                            <div class="caption">
+                                                <h4><a href='{% url 'wish_detail' item.pk %}'> {{item.name}} </a></h4>
+                                                <p><strong>简介:</strong>  {{item.description | striptags | truncatechars:50}} </p>  <!-- striptags可以过滤html标签 -->
+                                                {% if other.pk == user.pk %}
+                                                    <button onclick="deleteWish({{ item.pk }})" class="btn btn-danger btn-sm">删除心愿</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="collect-product">
+                        {% for item in collect_product_list %}
+                            {% if item.is_deleted == False %}
+                                <div class="col-md-4 col-sm-4 col-xs-6" id="collect-product-{{ item.pk }}">
+                                    <div class="thumbnail">
+                                        <img src="{{ item.img1.url }}" width="320px">
+                                        <div class="caption">
+                                            <h4><a href='{% url 'product_detail' item.pk %}'> {{item.name}} </a></h4>
+                                            <p><strong>简介:</strong>  {{item.description | striptags | truncatechars:50}} </p>  <!-- striptags可以过滤html标签 -->
+                                            {% if other.pk == user.pk %}
+                                                <button onclick="collectChange('product', {{ item.pk }})" class="btn btn-danger btn-sm">取消收藏</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="collect-wish">
+                        {% for item in collect_wish_list %}
+                            {% if item.is_deleted == False %}
+                                <div class="col-md-4 col-sm-4 col-xs-6" id="collect-wish-{{ item.pk }}">
+                                    <div class="thumbnail">
+                                        <div class="caption">
+                                            <h4><a href='{% url 'wish_detail' item.pk %}'> {{item.name}} </a></h4>
+                                            <p><strong>简介:</strong>  {{item.description | striptags | truncatechars:50}} </p>  <!-- striptags可以过滤html标签 -->
+                                            {% if other.pk == user.pk %}
+                                                <button onclick="collectChange('wish', {{ item.pk }})" class="btn btn-danger btn-sm">取消收藏</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
-<p>-----显示发布的心愿-----</p>
-{% if wish_list.count > 0 %}
-    {% for item in wish_list %}
-        {% if item.is_deleted == False %}
-            <div id="wish-{{ item.pk }}">
-                <a href="{% url 'wish_detail' item.pk %}">{{ item.name }}</a>
-                {% if other.pk == user.pk %}
-                    <button onclick="deleteWish({{ item.pk }})">删除心愿</button>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                {% if user.is_authenticated %}
+                    <button type="button" onclick="showIdols({{ other.pk }},{{ user.pk }})" class="btn btn-primary">关注的人</button>
+                    <button type="button" onclick="showFans({{ other.pk }},{{ user.pk }})" class="btn btn-primary">粉丝</button>
+                {% else %}
+                    <button type="button" onclick="showIdols({{ other.pk }},-1)" class="btn btn-primary">关注的人</button>
+                    <button type="button" onclick="showFans({{ other.pk }},-1)" class="btn btn-primary">粉丝</button>
                 {% endif %}
+                <div id="idols"></div>
+                <div id="fans"></div>
             </div>
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
-<p>-----显示收藏的商品-----</p>
-
-{% for item in collect_product_list %}
-    {% if item.is_deleted == False %}
-        <div id="collect-product-{{ item.pk }}">
-            <img src="{{ item.img1.url }}"/>
-            <a href="{% url 'product_detail' item.pk %}">{{ item.name }}</a>
-            {% if other.pk == user.pk %}
-                <button onclick="collectChange('product', {{ item.pk }})">取消收藏</button>
-            {% endif %}
         </div>
-    {% endif %}
-{% endfor %}
-<p>-----显示收藏的心愿-----</p>
-
-{% for item in collect_wish_list %}
-    {% if item.is_deleted == False %}
-        <div id="collect-wish-{{ item.pk }}">
-            <a href="{% url 'wish_detail' item.pk %}">{{ item.name }}</a>
-            {% if other.pk == user.pk %}
-                <button onclick="collectChange('wish', {{ item.pk }})">取消收藏</button>
-            {% endif %}
-        </div>
-    {% endif %}
-{% endfor %}
-
-
-<p>-----显示关注的人----</p>
-{% if user.is_authenticated %}
-    <button onclick="showIdols({{ other.pk }},{{ user.pk }})">关注的人</button>
-{% else %}
-    <button onclick="showIdols({{ other.pk }},-1)">关注的人</button>
-{% endif %}
-<p/>
-<div id="idols">
-
-</div>
-<p>-----显示粉丝-----</p>
-{% if user.is_authenticated %}
-    <button onclick="showFans({{ other.pk }},{{ user.pk }})">粉丝</button>
-{% else %}
-    <button onclick="showFans({{ other.pk }},-1)">粉丝</button>
-{% endif %}
-<p/>
-<div id="fans"></div>
-
+    </div>
 <script>
     // 使用ajax添加关注
     function follow(userid, otherid) {
@@ -114,7 +156,7 @@
             success: function (data) {
                 if (data['status'] = 'SUCCESS') {
                     $('#follow-button').remove()
-                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>')
+                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})" class="btn btn-danger btn-sm">取消关注</button>')
                 }
             },
             error: function (xhr) {
@@ -122,10 +164,8 @@
             }
         });
     }
-
     //用于在别人的idol列表中添加关注，为了避免标签复杂化，重写一遍
     function followidol(userid, otherid, htmlid) {
-
         $.ajax({
             url: "{% url 'follow' %}",
             type: 'GET',
@@ -138,7 +178,7 @@
                 if (data['status'] = 'SUCCESS') {
                     //改变页面头部的关注
                     $('#follow-button').remove()
-                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})">取消关注</button>')
+                    $('#follow-span').append(' <button id="unfollow-button" onclick="unfollow({{ user.pk }},{{ other.pk }})" class="btn btn-danger btn-sm">取消关注</button>')
 
                     $('#follow-button-' + htmlid).remove()
                     $('#follow-span-' + htmlid).append('<span>已关注</span>')
@@ -149,7 +189,6 @@
             }
         });
     }
-
     //使用ajax取消关注
     function unfollow(userid, otherid) {
         $('#fans').html('')
@@ -165,7 +204,7 @@
             success: function (data) {
                 if (data[status] = 'SUCCESS') {
                     $('#unfollow-button').remove()
-                    $('#follow-span').append(' <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})">关注</button>')
+                    $('#follow-span').append(' <button id="follow-button" onclick="follow({{ user.pk }},{{ other.pk }})" class="btn btn-primary btn-sm">关注</button>')
                 }
             },
             error: function (xhr) {
@@ -173,7 +212,6 @@
             }
         });
     }
-
     //userid:当前页面的用户id   meid：登录的用户id
     function showIdols(userid, meid) {
         $('#fans').html('')
@@ -193,15 +231,15 @@
                         var fhtml = '';
                         if (meid != -1 & data['idols'][i]['idolid'] != meid) {
                             if (data['idols'][i]['isFollow'] != 0) {
-                                fhtml = '<span>已关注</span>'
+                                fhtml = '<button class="btn btn-default btn-sm" disabled="disabled">已关注</button>'
                             } else {
                                 fhtml = '<span id="follow-span' + data['idols'][i]['idolid'] +
-                                    '"><button id = "follow-button-idols' + data['idols'][i]['idolid'] +
+                                    '"><button class="btn btn-primary btn-sm" id = "follow-button-idols' + data['idols'][i]['idolid'] +
                                     '" onclick="followidol(' + meid + ',' + data['idols'][i]['idolid'] +
                                     ',' + '\'idols' + data['idols'][i]['idolid'] + '\')">关注</button></span>';
                             }
                         }
-                        html = '<a href="/user/' + data['idols'][i]['idolid'] + '">' +
+                        html = '<br><a style="text-decoration: none" href="/user/' + data['idols'][i]['idolid'] + '">' +
                             data['idols'][i]['idol'] + '</a> &nbsp;' +
                             fhtml + '<span id="follow-span-idols' + data['idols'][i]['idolid'] + '"></span><p/>';
                         $('#idols').append(html);
@@ -233,15 +271,15 @@
                         var fhtml = '';
                         if (meid != -1 & data['fans'][i]['fansid'] != meid) {
                             if (data['fans'][i]['isFollow'] != 0) {
-                                fhtml = '<span>已关注</span>'
+                                fhtml = '<button class="btn btn-default btn-sm" disabled="disabled">已关注</button>'
                             } else {
                                 fhtml = '<span id="follow-span' + data['fans'][i]['fansid'] +
-                                    '"><button id = "follow-button-fans' + data['fans'][i]['fansid'] +
+                                    '"><button class="btn btn-primary btn-sm" id = "follow-button-fans' + data['fans'][i]['fansid'] +
                                     '" onclick="followidol(' + meid + ',' + data['fans'][i]['fansid'] +
                                     ',' + '\'fans' + data['fans'][i]['fansid'] + '\')">关注</button></span>';
                             }
                         }
-                        html = '<a href="/user/' + data['fans'][i]['fansid'] + '">' +
+                        html = '<br><a style="text-decoration: none" href="/user/' + data['fans'][i]['fansid'] + '">' +
                             data['fans'][i]['fans'] + '</a> &nbsp;' +
                             fhtml + '<span id="follow-span-fans' + data['fans'][i]['fansid'] + '"></span><p/>';
                         $('#fans').append(html);
@@ -314,3 +352,4 @@
         });
     }
 </script>
+{% endblock %}

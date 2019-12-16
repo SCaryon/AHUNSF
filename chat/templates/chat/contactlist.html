@@ -1,18 +1,42 @@
+{% extends 'base.html' %}
 {% load staticfiles %}
-<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
 
-{% if user.is_authenticated %}
-    {% for item in linkman_list %}
-        <div>
-            <a href="{% url 'room' item.pk %}">{{ item.username }}</a>
-            {% for key,val in unread.items %}
-                {% if key == item.pk %}
-                    <span>有{{ val }}条信息未读</span>
-                {% endif %}
-            {% endfor %}
+{% block title %}
+    安大不闲鱼|我的消息
+{% endblock %}
+
+{% block home-extends %}<link rel="stylesheet" href="{% static 'product.css' %}">{% endblock %}
+
+{% block message_active_class %}active{%endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-4 col-xs-offset-4">
+                <br><br><br><br><br>
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center"><strong>联系人列表</strong></div>
+                    <ul class="list-group">
+                        {% if user.is_authenticated %}
+                        {% for item in linkman_list %}
+                            <li class="list-group-item">
+                                <a style="text-decoration: none" href="{% url 'room' item.pk %}">{{ item.username }}</a>
+                                &emsp;&emsp;&emsp;&emsp;
+                                {% for key,val in unread.items %}
+                                    {% if key == item.pk %}
+                                    <a href="{% url 'room' item.pk %}" class="btn btn-primary">
+                                        新消息
+                                        <span class="badge">{{ val }}</span>
+                                    </a>
+                                    {% endif %}
+                                {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <span>请先登录</span>
+                    {% endif %}
+                    </ul>
+                </div>
+            </div>
         </div>
-    {% endfor %}
-{% else %}
-    <span>请先登录</span>
-{% endif %}
-<p/>
+    </div>
+{%endblock%}
