@@ -17,8 +17,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from squareCenter import views
 
 urlpatterns = [
+    path('', views.products_list),
     path('user/', include('personalCenter.urls')),
     path('square/', include('squareCenter.urls')),
     path('likes/', include('likes.urls')),

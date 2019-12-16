@@ -141,5 +141,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'  # 可以不是media 任意名字均可
 
 # 自定义参数
-NUM_IN_ONE_PAGE = 1
+NUM_IN_ONE_PAGE = 3
 PAGE_GAP = 3  # 以当前页为中心 前后显示的页的数量
