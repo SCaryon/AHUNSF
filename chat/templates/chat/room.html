@@ -1,16 +1,34 @@
+{% extends 'base.html' %}
 {% load staticfiles %}
-<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
 
-<textarea id="chat-log" cols="100" rows="20"></textarea><br/>
-<input id="chat-message-input" type="text" size="100"/><br/>
-<input id="chat-message-submit" type="button" onclick="send({{ user.pk }},{{ other.pk }})" value="Send"/>
-<button onclick="showhistory({{ user.pk }},{{ other.pk }})">历史消息</button><p/>
-<div id="history-msg"></div>
+{% block title %}
+    安大不闲鱼|我的消息
+{% endblock %}
+
+{% block home-extends %}<link rel="stylesheet" href="{% static 'product.css' %}">{% endblock %}
+
+{% block message_active_class %}active{%endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <h4>
+                <strong>发送至 <a style="text-decoration: none" href="{% url 'center' other.pk %}">{{other.username}}</a></strong>
+            </h4>
+            <textarea readonly class="form-control" id="chat-log" style="max-width: 100%; min-width: 100%;max-height: 25em; min-height: 25em; font-size: 1.3em"></textarea><br>
+            <input id="chat-message-input" type="text" size="100" class="form-control" placeholder="输入聊天信息"><br>
+            <input id="chat-message-submit" type="button" class="btn btn-primary" onclick="send({{ user.pk }},{{ other.pk }})" value="发送"/>
+            <button class="btn btn-default pull-right" onclick="showhistory({{ user.pk }},{{ other.pk }})">历史消息</button>
+            <br>
+            <div id="history-msg"></div>
+        </div>
+    </div>
+
 
 <script>
     var roomName = {{ room_name }};
     {% for msg in unread_msg %}
-        var m = '{{  msg.sender.username }}' + ":" + '{{ msg.text }}';
+        var m = '{{  msg.sender.username }}' + "：" + '{{ msg.text }}';
         document.querySelector('#chat-log').value += (m + '\n');
     {% endfor %}
 
@@ -22,7 +40,7 @@
         var data = JSON.parse(e.data);
         var message = data['message'];
         var sender = data['sender']
-        document.querySelector('#chat-log').value += (sender + ": " + message + '\n');
+        document.querySelector('#chat-log').value += (sender + "：" + message + '\n');
     };
 
     chatSocket.onclose = function (e) {
@@ -46,27 +64,31 @@
         }));
         messageInputDom.value = '';
     };
-
+    var count = 0;
     function showhistory(sender, receiver) {
-        $.ajax({
-            url: "{% url 'show_history' %}",
-            type: 'GET',
-            data: {
-                senderpk: sender,
-                receiverpk: receiver
-            },
-            cache: false,
-            success: function (data) {
-                for (var i = 0; i < data['history'].length; i++) {
-                    html = '<span>sender:' + data['history'][i]['sender'] + '&emsp;text:' +
-                        data['history'][i]['text'] + '&emsp;time:' + data['history'][i]['time'] +
-                        '</span><p/>'
-                    $('#history-msg').append(html)
+        count = count + 1
+        if (count == 1) {
+            $.ajax({
+                url: "{% url 'show_history' %}",
+                type: 'GET',
+                data: {
+                    senderpk: sender,
+                    receiverpk: receiver
+                },
+                cache: false,
+                success: function (data) {
+                    for (var i = 0; i < data['history'].length; i++) {
+                        html = '<h4>' + data['history'][i]['sender'] + '&emsp;' + data['history'][i]['time'] + '<br>&emsp;&emsp;' +
+                            data['history'][i]['text'] +
+                            '</h4>'
+                        $('#history-msg').append(html)
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr)
                 }
-            },
-            error: function (xhr) {
-                console.log(xhr)
-            }
-        });
+            });
+        }
     }
 </script>
+{%endblock%}

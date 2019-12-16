@@ -1,32 +1,66 @@
+{% extends 'base.html' %}
 {% load staticfiles %}
-<script src="{% static 'jquery-1.12.4/jquery-1.12.4.min.js' %}"></script>
-{% if user.is_authenticated %}
-    <form action="" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <span>name</span>
-        <input type="text" name="name">
-        <span>description</span>
-        <input type="text" name="description">
-        <p/>
-        <span>type</span>
-        <select name="typeid">
-            {% for type in wishtype_list %}
-                <option value="{{ type.pk }}">{{ type.type_name }}</option>
-            {% endfor %}
-        </select>
-        <p/>
-        <span>price</span>
-        <input type="text" name="price">
-        <p/>
-        <input type="submit" name="提交">
-    </form>
-{% else %}
-    <a href="{% url 'login' %}">请先登录</a>
-{% endif %}
 
-<script>
-    function addImg() {
-        num = $('#imgs').children().length + 1
-        $('#imgs').append('<input type="file" name="img' + num + '">')
-    }
-</script>
+{% block title %}
+    安大不闲鱼|个人中心
+{% endblock %}
+
+{% block home-extends %}<link rel="stylesheet" href="{% static 'product.css' %}">{% endblock %}
+
+{% block center_active_class %}active{% endblock %}
+
+{% block content%}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-12">
+                <div class="thumbnail">
+                    <img src="/static/user_background.jpg" alt="个人中心">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 col-xs-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center"><strong>商品上传</strong></div>
+                    <div class="panel-body">
+                        {% if user.is_authenticated %}
+                            <form action="" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label>心愿名称</label>
+                                    <input type="text" class="form-control" placeholder="请输入心愿名称">
+                                </div>
+                                <div class="form-group">
+                                    <label>心愿描述</label>
+                                    <textarea style="max-width: 100%;min-width: 100%;" class="form-control" rows="3" placeholder="请输入心愿描述"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>心愿分类</label><br>
+                                    <select name="typeid" class="form-control">
+                                        {% for type in wishtype_list %}
+                                            <option value="{{ type.pk }}">{{ type.type_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>心愿预算价格</label>
+                                    <input type="text" name="price" class="form-control" placeholder="请输入心愿预算价格">
+                                </div>
+                                <input type="submit" name="提交" class="btn btn-primary btn-block">
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-danger btn-sm text-center">请先登录</a>
+                        {% endif %}
+
+                        <script>
+                            function addImg() {
+                                num = $('#imgs').children().length + 1
+                                $('#imgs').append('<input type="file" name="img' + num + '">')
+                            }
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

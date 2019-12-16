@@ -9,7 +9,6 @@ from .models import Follow
 from squareCenter.models import Product, Wish
 from likes.models import CollectRecord
 
-
 # 注册用户
 def register(request):
     if request.method == "POST":
@@ -20,7 +19,6 @@ def register(request):
             password = reg_form.cleaned_data['password']
             user = User.objects.create_user(username, email, password)
             user.save()
-            Profile(user=user)
             user = auth.authenticate(username=username, password=password)
             auth.login(request, user)
             return redirect(request.GET.get('from', reverse('products')))

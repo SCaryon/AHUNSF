@@ -2,9 +2,6 @@ from django.shortcuts import render, redirect
 from squareCenter.models import ProductType, WishType, Product, Wish
 from django.urls import reverse
 
-
-# Create your views here.
-
 def add_product(request):
     context = {}
     if request.method == 'POST':

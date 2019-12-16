@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.http import JsonResponse
+from django.contrib.auth.models import User
 
 from .models import Product, ProductType, Wish, WishType
 
@@ -79,18 +80,20 @@ def wishes_list_with_type(request, type_id):
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, pk=product_id, is_deleted=False)
-
     Dict = {}
+    user = User.objects.filter(username=product.publisher)
     Dict['product'] = product
+    Dict['publisher_id'] = user.first().pk
     response = render(request, "squareCenter/product_detail.html", Dict)
     return response
 
 
 def wish_detail(request, wish_id):
     wish = get_object_or_404(Wish, pk=wish_id, is_deleted=False)
-
     Dict = {}
+    user = User.objects.filter(username=wish.publisher)
     Dict['wish'] = wish
+    Dict['publisher_id'] = user.first().pk
     response = render(request, "squareCenter/wish_detail.html", Dict)
     return response
 
